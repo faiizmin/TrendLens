@@ -3,6 +3,12 @@ dist/
 .env
 .env.*
 !.env.example
+.vercel/
+.pnpm-store/
+*.pem
+*.key
 .DS_Store
 *.local
 coverage/
+.vercel
+.env*

@@ -3,13 +3,18 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "engines": { "node": ">=20.9.0" },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node --import tsx --test src/**/*.test.js"
+    "test": "node --import tsx --test src/**/*.test.js api/**/*.test.js",
+    "test:db": "bash db/tests/validate-postgres16.sh"
   },
   "dependencies": {
+    "@clerk/backend": "^3.19.0",
+    "@clerk/react": "^6.15.2",
+    "@neondatabase/serverless": "^1.2.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "recharts": "^2.15.4"

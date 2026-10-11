@@ -4,6 +4,7 @@ import {
   Tooltip, XAxis, YAxis,
 } from 'recharts';
 import SettingsForm from './components/SettingsForm.jsx';
+import AuthControls from './components/AuthControls.jsx';
 import { productionData, productionLines, productNames } from './data/productionData.js';
 import {
   COMPANY_STORAGE_KEY, PROFILE_STORAGE_KEY, defaultCompany, defaultProfile,
@@ -32,7 +33,7 @@ function PanelHeading({ title, subtitle, action }) {
 
 function EmptyChart() { return <div className="empty-chart"><span>⌁</span><strong>No production records</strong><p>Try adjusting the selected filters to see results.</p></div>; }
 
-export default function App() {
+export default function App({ authEnabled = false }) {
   const [activeNav, setActiveNav] = useState('Overview');
   const [startDate, setStartDate] = useState(productionData[0].date);
   const [endDate, setEndDate] = useState(productionData.at(-1).date);
@@ -40,11 +41,13 @@ export default function App() {
   const [product, setProduct] = useState('All products');
   const [dateError, setDateError] = useState('');
   const [showAllRows, setShowAllRows] = useState(false);
+  const [authenticatedCompany, setAuthenticatedCompany] = useState(null);
   const [settings, setSettings] = useState(() => {
     try { return readSettings(window.localStorage); }
     catch { return { profile: { ...defaultProfile }, company: { ...defaultCompany }, errors: ['Browser storage is unavailable. Changes cannot be saved.'] }; }
   });
   const { profile, company } = settings;
+  const visibleCompany = authenticatedCompany || company;
 
   function saveProfile(nextProfile) {
     try {
@@ -126,7 +129,7 @@ export default function App() {
   return <div className="app-shell">
     <aside className="sidebar">
       <a className="brand" href="#overview" onClick={() => setActiveNav('Overview')}><IconMark/><span>Trend<span>Lens</span></span></a>
-      <button className="workspace-picker" onClick={() => setActiveNav('Settings')} aria-label="Open company settings"><div className="workspace-avatar">{company.name.trim().slice(0, 1).toUpperCase() || 'C'}</div><div><strong>{company.name}</strong><small>{company.industry}</small></div><span className="chevron">⌄</span></button>
+      <button className="workspace-picker" onClick={() => setActiveNav('Settings')} aria-label="Open company settings"><div className="workspace-avatar">{visibleCompany.name?.trim().slice(0, 1).toUpperCase() || 'C'}</div><div><strong>{visibleCompany.name}</strong><small>{visibleCompany.industry}</small></div><span className="chevron">⌄</span></button>
       <div className="nav-label">WORKSPACE</div>
       <nav className="side-nav" aria-label="Main navigation">{navItems.map(([name, icon]) =>
         <button key={name} className={activeNav === name ? 'nav-item active' : 'nav-item'} onClick={() => setActiveNav(name)}>
@@ -138,7 +141,7 @@ export default function App() {
     </aside>
 
     <main className="main-area" id="overview">
-      <header className="topbar"><div className="breadcrumb"><span>{company.name}</span><b>/</b><strong>{activeNav}</strong></div><div className="topbar-tools"><span className="live-status"><i />Data updated 8 min ago</span><button className="icon-button notification" aria-label="Notifications">♧<i /></button><div className="top-avatar">{profile.name.split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase()}</div></div></header>
+      <header className="topbar"><div className="breadcrumb"><span>{visibleCompany.name}</span><b>/</b><strong>{activeNav}</strong></div><div className="topbar-tools"><span className="live-status"><i />Data updated 8 min ago</span><button className="icon-button notification" aria-label="Notifications">♧<i /></button><AuthControls enabled={authEnabled} onCompanyChange={setAuthenticatedCompany} /></div></header>
       <div className="dashboard-content">
         {activeNav !== 'Settings' && <section className="page-heading"><div><div className="eyebrow"><span className="eyebrow-dot"/> {activeNav === 'Overview' ? 'OPERATIONS OVERVIEW' : 'PRODUCTION ANALYTICS'}</div><h1>{activeNav === 'Overview' ? `Good morning, ${profile.name.split(/\s+/)[0] || 'there'}` : 'Performance trends'}</h1><p>{activeNav === 'Overview' ? 'Here’s what’s happening across your production floor today.' : 'Explore production, downtime, and quality patterns across the selected period.'}</p></div><div className="heading-actions"><button className="export-button" onClick={() => window.print()}><span>↓</span> Export report</button><div className="date-range-chip"><span className="calendar-icon">▦</span>{dateRange}<span className="chip-caret">⌄</span></div></div></section>}
 
